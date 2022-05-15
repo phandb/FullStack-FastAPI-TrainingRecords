@@ -1,12 +1,18 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 
 import models
 from database import engine, SessionLocal
 from routers.auth import get_current_user, get_user_exception
+
+import sys
+
+sys.path.append("..")
 
 router = APIRouter(
     prefix="/tasks",
@@ -17,6 +23,9 @@ router = APIRouter(
 models.Base.metadata.create_all(bind=engine)
 
 
+templates = Jinja2Templates(directory="templates")
+
+
 def get_db():
     try:
         db = SessionLocal()
@@ -24,6 +33,14 @@ def get_db():
     finally:
         db.close()
 
+
+# ---------- Rebuild Entire API for full stack project-----------
+
+# -----------------------------------------------------
+
+"""
+
+# The following codes are for REST API and not for Full Stack Project
 
 class Task(BaseModel):
     task_name: str
@@ -163,3 +180,4 @@ async def delete_task(task_id: int,
 
 def http_exception():
     return HTTPException(status_code=404, detail="Task not found")
+"""
