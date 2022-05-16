@@ -1,14 +1,18 @@
 from datetime import timedelta, datetime
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from starlette import status
+
+
 import models
 from database import engine, SessionLocal
+
 
 import sys
 sys.path.append("..")
@@ -30,6 +34,9 @@ bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 models.Base.metadata.create_all(bind=engine)
 
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl="token")
+
+
+templates = Jinja2Templates(directory="templates")
 
 router = APIRouter(
     prefix="/auth",
@@ -76,6 +83,16 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     token = create_access_token(user.username, user.id, expires_delta=token_expires)
 
     return {"token": token}
+
+
+@router.get("/", response_class=HTMLResponse)
+async def authentication_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@router.get("/register", response_class=HTMLResponse)
+async def register(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
 
 
 #  ---- supplemented methods-----

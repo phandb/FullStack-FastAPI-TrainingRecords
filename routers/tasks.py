@@ -34,7 +34,7 @@ def get_db():
         db.close()
 
 
-# ---------- Rebuild Entire API for full stack project-----------
+
 
 # -----------------------------------------------------
 
