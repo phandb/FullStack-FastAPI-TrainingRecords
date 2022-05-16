@@ -38,7 +38,6 @@ def get_db():
 # ---------- Rebuild Entire API for full stack project-----------
 @router.get("/", response_class=HTMLResponse)
 async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
-
     tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == 1).all()
     return templates.TemplateResponse("home.html", {"request": request, "tasks": tasks})
 
@@ -52,13 +51,14 @@ async def add_new_task(request: Request):
 # process form in add-task.html
 @router.post("/add-task", response_class=HTMLResponse)
 async def create_task(request: Request,
-                      task_name: str = Form(...),
+                      name: str = Form(...),
                       category: str = Form(...),
                       db: Session = Depends(get_db)):
+    #  The parameters must be matched to the name field of the form in add-task.html
 
     task_model = models.Tasks()
 
-    task_model.task_name = task_name
+    task_model.task_name = name
     task_model.category = category
     task_model.date_taken = datetime.utcnow()
     task_model.owner_id = 1
@@ -70,8 +70,28 @@ async def create_task(request: Request,
 
 
 @router.get("/edit-task/{task_id}", response_class=HTMLResponse)
-async def edit_task(request: Request):
-    return templates.TemplateResponse("edit-task.html", {"request": request})
+async def edit_task(request: Request, task_id: int, db: Session = Depends(get_db)):
+    task = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
+
+    return templates.TemplateResponse("edit-task.html", {"request": request, "task": task})
+
+
+@router.post("/edit-task/{task_id}", response_class=HTMLResponse)
+async def edit_task_commit(request: Request, task_id: int,
+                           name: str = Form(...),
+                           category: str = Form(...),
+                           date_taken: datetime = Form(...),
+                           db: Session = Depends(get_db)):
+    task_model = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
+
+    task_model.task_name = name
+    task_model.category = category
+    task_model.date_taken = date_taken
+
+    db.add(task_model)
+    db.commit()
+
+    return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
 
 
 # -----------------------------------------------------
