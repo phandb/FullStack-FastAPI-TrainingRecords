@@ -1,10 +1,12 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Form
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from starlette import status
+from starlette.responses import RedirectResponse
 
 import models
 from database import engine, SessionLocal
@@ -41,9 +43,30 @@ async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
     return templates.TemplateResponse("home.html", {"request": request, "tasks": tasks})
 
 
+# call add-task.html
 @router.get("/add-task", response_class=HTMLResponse)
 async def add_new_task(request: Request):
     return templates.TemplateResponse("add-task.html", {"request": request})
+
+
+# process form in add-task.html
+@router.post("/add-task", response_class=HTMLResponse)
+async def create_task(request: Request,
+                      task_name: str = Form(...),
+                      category: str = Form(...),
+                      db: Session = Depends(get_db)):
+
+    task_model = models.Tasks()
+
+    task_model.task_name = task_name
+    task_model.category = category
+    task_model.date_taken = datetime.utcnow()
+    task_model.owner_id = 1
+
+    db.add(task_model)
+    db.commit()
+
+    return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
 
 
 @router.get("/edit-task/{task_id}", response_class=HTMLResponse)
