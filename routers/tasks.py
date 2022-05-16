@@ -94,6 +94,24 @@ async def edit_task_commit(request: Request, task_id: int,
     return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
 
 
+@router.get("/delete/{task_id}")
+async def delete_task(request: Request, task_id: int, db: Session = Depends(get_db)):
+
+    task_model = db.query(models.Tasks)\
+        .filter(models.Tasks.id == task_id)\
+        .filter(models.Tasks.owner_id == 1)\
+        .first()
+
+    if task_model is None:
+        return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
+
+    db.query(models.Tasks).filter(models.Tasks.id == task_id).delete()
+
+    db.commit()
+
+    return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
+
+
 # -----------------------------------------------------
 
 """

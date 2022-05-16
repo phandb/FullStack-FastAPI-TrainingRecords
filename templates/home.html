@@ -30,10 +30,17 @@
                       <td>{{ task.category }} </td>
                       <td>{{ task.date_taken }} </td>
                       <td>
-                          <button type="button" class="btn btn-success">Complete</button>
+                          <!-- Call endpoint in task API -->
                           <button onclick="window.location.href='edit-task/{{task.id}}'"
                                   type="button" class="btn btn-info">
                               Edit
+                          </button>
+                          <!-- Call endpoint in task API -->
+                          <button onclick="window.location.href='/tasks/delete/{{task.id}}'"
+                                  type="button"
+                                  class="btn btn-danger">
+                              Delete
+
                           </button>
                       </td>
                     </tr>
