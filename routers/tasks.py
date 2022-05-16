@@ -22,7 +22,6 @@ router = APIRouter(
 
 models.Base.metadata.create_all(bind=engine)
 
-
 templates = Jinja2Templates(directory="templates")
 
 
@@ -34,6 +33,22 @@ def get_db():
         db.close()
 
 
+# ---------- Rebuild Entire API for full stack project-----------
+@router.get("/", response_class=HTMLResponse)
+async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
+
+    tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == 1).all()
+    return templates.TemplateResponse("home.html", {"request": request, "tasks": tasks})
+
+
+@router.get("/add-task", response_class=HTMLResponse)
+async def add_new_task(request: Request):
+    return templates.TemplateResponse("add-task.html", {"request": request})
+
+
+@router.get("/edit-task/{task_id}", response_class=HTMLResponse)
+async def edit_task(request: Request):
+    return templates.TemplateResponse("edit-task.html", {"request": request})
 
 
 # -----------------------------------------------------
