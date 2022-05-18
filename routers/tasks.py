@@ -38,13 +38,26 @@ def get_db():
 # ---------- Rebuild Entire API for full stack project-----------
 @router.get("/", response_class=HTMLResponse)
 async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
-    tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == 1).all()
+
+    # get current user
+    user = await get_current_user(request)
+    if user is None:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
+
+    tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == user.get("id")).all()
+
     return templates.TemplateResponse("home.html", {"request": request, "tasks": tasks})
 
 
 # call add-task.html
 @router.get("/add-task", response_class=HTMLResponse)
 async def add_new_task(request: Request):
+
+    # get the current user
+    user = await get_current_user(request)
+    if user is None:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
+
     return templates.TemplateResponse("add-task.html", {"request": request})
 
 
@@ -56,12 +69,17 @@ async def create_task(request: Request,
                       db: Session = Depends(get_db)):
     #  The parameters must be matched to the name field of the form in add-task.html
 
+    # Get the current user
+    user = await get_current_user(request)
+    if user is None:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
+
     task_model = models.Tasks()
 
     task_model.task_name = name
     task_model.category = category
     task_model.date_taken = datetime.utcnow()
-    task_model.owner_id = 1
+    task_model.owner_id = user.get("id")
 
     db.add(task_model)
     db.commit()
@@ -71,6 +89,12 @@ async def create_task(request: Request,
 
 @router.get("/edit-task/{task_id}", response_class=HTMLResponse)
 async def edit_task(request: Request, task_id: int, db: Session = Depends(get_db)):
+
+    # Get the current user
+    user = await get_current_user(request)
+    if user is None:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
+
     task = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
 
     return templates.TemplateResponse("edit-task.html", {"request": request, "task": task})
@@ -82,6 +106,12 @@ async def edit_task_commit(request: Request, task_id: int,
                            category: str = Form(...),
                            date_taken: datetime = Form(...),
                            db: Session = Depends(get_db)):
+
+    # get the current user
+    user = await get_current_user(request)
+    if user is None:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
+
     task_model = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
 
     task_model.task_name = name
@@ -97,9 +127,14 @@ async def edit_task_commit(request: Request, task_id: int,
 @router.get("/delete/{task_id}")
 async def delete_task(request: Request, task_id: int, db: Session = Depends(get_db)):
 
+    # Get the current user
+    user = await get_current_user(request)
+    if user is None:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
+
     task_model = db.query(models.Tasks)\
         .filter(models.Tasks.id == task_id)\
-        .filter(models.Tasks.owner_id == 1)\
+        .filter(models.Tasks.owner_id == user.get("id"))\
         .first()
 
     if task_model is None:

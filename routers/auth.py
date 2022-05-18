@@ -50,7 +50,7 @@ class LoginForm:
         self.username: Optional[str] = None
         self.password: Optional[str] = None
 
-    async def create_auth_form(self):
+    async def create_oauth_form(self):
         form = await self.request.form()
         self.username = form.get("email")
         self.password = form.get("password")
@@ -109,7 +109,7 @@ async def authentication_page(request: Request):
 async def login(request: Request, db: Session = Depends(get_db)):
     try:
         form = LoginForm(request)
-        await form.create_auth_form()
+        await form.create_oauth_form()
         response = RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
 
         validate_user_cookie = await login_for_access_token(response=response,
@@ -166,14 +166,20 @@ def create_access_token(username: str, user_id: int,
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def get_current_user(token: str = Depends(oauth2_bearer)):
+# Modify for full stack
+# async def get_current_user(token: str = Depends(oauth2_bearer)):
+async def get_current_user(request: Request):
     try:
+        token = request.cookies.get("access_token")  # access_token provided in jwt
+        if token is None:
+            return None
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         user_id: int = payload.get("id")
 
         if username is None or user_id is None:
-            raise get_user_exception()
+            # raise get_user_exception()
+            return None
         return {"username": username, "id": user_id}
     except JWTError:
         raise get_user_exception()
