@@ -46,7 +46,7 @@ async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
 
     tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == user.get("id")).all()
 
-    return templates.TemplateResponse("home.html", {"request": request, "tasks": tasks})
+    return templates.TemplateResponse("home.html", {"request": request, "tasks": tasks, "user": user})
 
 
 # call add-task.html
@@ -58,7 +58,7 @@ async def add_new_task(request: Request):
     if user is None:
         return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
 
-    return templates.TemplateResponse("add-task.html", {"request": request})
+    return templates.TemplateResponse("add-task.html", {"request": request, "user": user})
 
 
 # process form in add-task.html
@@ -97,7 +97,7 @@ async def edit_task(request: Request, task_id: int, db: Session = Depends(get_db
 
     task = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
 
-    return templates.TemplateResponse("edit-task.html", {"request": request, "task": task})
+    return templates.TemplateResponse("edit-task.html", {"request": request, "task": task, "user": user})
 
 
 @router.post("/edit-task/{task_id}", response_class=HTMLResponse)
