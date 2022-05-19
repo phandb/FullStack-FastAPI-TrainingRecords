@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 import models
 from database import engine, SessionLocal
-from routers.auth import get_current_user, get_user_exception, verify_password, get_password_hashed
+from routers.auth import get_current_user, verify_password, get_password_hashed, get_user_exception
 
 import sys
 sys.path.append("..")
@@ -65,7 +65,8 @@ async def update_user_password(user_verification: UserVerification,
                                db: Session = Depends(get_db)):
     # Validate logged in user
     if user is None:
-        return get_user_exception()
+        # return get_user_exception()
+        return None
 
     # Retrieve the current user info and put them into a variable
     user_model = db.query(models.Users).filter(models.Users.id == user.get("id")).first()
@@ -87,6 +88,7 @@ async def delete_user(user: dict = Depends(get_current_user), db: Session = Depe
 
     if user is None:
         return get_user_exception()
+        # return None
 
     user_model = db.query(models.Users).filter(models.Users.id == user.get("id")).first()
 

@@ -23,5 +23,15 @@
 <script src="{{ url_for('static', path='/task/js/popper.js') }}"></script>
 <script src="{{ url_for('static', path='/task/js/bootstrap.js') }}"></script>
 <script src="{{ url_for('static', path='/task/js/jquery.datetimepicker.full.min.js') }}"></script>
+<script>
+    $(function() {
+        $('#picker').datetimepicker({
+        'timepicker': false,
+        'datepicker': true,
+        'format': 'Y-m-d', // format date
+        });
+    });
+
+</script>
 </body>
 </html>

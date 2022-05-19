@@ -6,7 +6,7 @@
              Let's edit your task!
         </div>
         <div class="card-body">
-            <form methos="POST">
+            <form method="POST">
                 <div class="form-group">
                     <label>Task</label>
                     <input type="text" class="form-control" name="task"
@@ -23,7 +23,7 @@
                 </div>
                 <div class="form-group">
                     <label>Date Taken</label>
-                    <input class="form-control" name="date-taken" value="{{task.date_taken}}">
+                    <input id="picker" class="form-control" name="date-taken" value="{{task.date_taken}}">
 
                 </div>
                 <button type="submit" class="btn btn-primary">Update</button>

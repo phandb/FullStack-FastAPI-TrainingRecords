@@ -10,7 +10,7 @@ from starlette.responses import RedirectResponse
 
 import models
 from database import engine, SessionLocal
-from routers.auth import get_current_user, get_user_exception
+from routers.auth import get_current_user
 
 import sys
 
@@ -101,7 +101,8 @@ async def edit_task(request: Request, task_id: int, db: Session = Depends(get_db
 
 
 @router.post("/edit-task/{task_id}", response_class=HTMLResponse)
-async def edit_task_commit(request: Request, task_id: int,
+async def edit_task_commit(request: Request,
+                           task_id: int,
                            name: str = Form(...),
                            category: str = Form(...),
                            date_taken: datetime = Form(...),
