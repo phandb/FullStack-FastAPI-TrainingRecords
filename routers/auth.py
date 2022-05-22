@@ -124,6 +124,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
         if not validate_user_cookie:
             msg = "Incorrect username or password!"
             return templates.TemplateResponse("login.html", {"request": request, "msg": msg})
+
         return response
     except HTTPException:
         msg = "Unknown Error"

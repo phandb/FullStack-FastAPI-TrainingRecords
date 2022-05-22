@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Request, Form
+from jinja2 import Template
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse
@@ -25,6 +26,8 @@ router = APIRouter(
 models.Base.metadata.create_all(bind=engine)
 
 templates = Jinja2Templates(directory="templates")
+
+# datetime_template = Template("{{ date.strftime('%Y-%m-%d') }}")
 
 
 def get_db():
@@ -64,8 +67,9 @@ async def add_new_task(request: Request):
 # process form in add-task.html
 @router.post("/add-task", response_class=HTMLResponse)
 async def create_task(request: Request,
-                      name: str = Form(...),
+                      task_name: str = Form(...),
                       category: str = Form(...),
+                      date_taken: datetime = Form(...),
                       db: Session = Depends(get_db)):
     #  The parameters must be matched to the name field of the form in add-task.html
 
@@ -76,9 +80,9 @@ async def create_task(request: Request,
 
     task_model = models.Tasks()
 
-    task_model.task_name = name
+    task_model.task_name = task_name
     task_model.category = category
-    task_model.date_taken = datetime.utcnow()
+    task_model.date_taken = date_taken
     task_model.owner_id = user.get("id")
 
     db.add(task_model)
@@ -103,7 +107,7 @@ async def edit_task(request: Request, task_id: int, db: Session = Depends(get_db
 @router.post("/edit-task/{task_id}", response_class=HTMLResponse)
 async def edit_task_commit(request: Request,
                            task_id: int,
-                           name: str = Form(...),
+                           task_name: str = Form(...),
                            category: str = Form(...),
                            date_taken: datetime = Form(...),
                            db: Session = Depends(get_db)):
@@ -115,7 +119,7 @@ async def edit_task_commit(request: Request,
 
     task_model = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
 
-    task_model.task_name = name
+    task_model.task_name = task_name
     task_model.category = category
     task_model.date_taken = date_taken
 
@@ -147,6 +151,8 @@ async def delete_task(request: Request, task_id: int, db: Session = Depends(get_
 
     return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
 
+
+# async def date_format(date: str):
 
 # -----------------------------------------------------
 

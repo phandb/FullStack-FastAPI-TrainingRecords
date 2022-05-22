@@ -1,6 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from starlette import status
+from starlette.requests import Request
+from starlette.responses import RedirectResponse, HTMLResponse
+from starlette.templating import Jinja2Templates
 
 import models
 from database import engine, SessionLocal
@@ -17,6 +21,8 @@ router = APIRouter(
 )
 
 models.Base.metadata.create_all(bind=engine)
+
+templates = Jinja2Templates(directory="templates")
 
 
 # Setup database
@@ -36,27 +42,38 @@ class UserVerification(BaseModel):
 
 
 # --------Users API Endpoints --------------
-@router.get("/")
-async def read_all_users(db: Session = Depends(get_db)):
-    return db.query(models.Users).all()
+@router.get("/edit-password", response_class=HTMLResponse)
+async def edit_user_view(request: Request):
+    user = await get_current_user(request)
+    if user is None:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
+
+    return templates.TemplateResponse("edit-password.html", {"request": request, "user": user})
 
 
-@router.get("/{user_id}")
-async def read_user_by_path_param(user_id: int, db: Session = Depends(get_db)):
-    user_model = db.query(models.Users).filter(models.Users.id == user_id).first()
-    if user_model is not None:
-        return user_model
-    return "Invalid User"
+@router.post("/edit-password", response_class=HTMLResponse)
+async def user_password_change(request: Request,
+                               username: str = Form(...),
+                               password: str = Form(...),
+                               password2: str = Form(...),
+                               db: Session = Depends(get_db)):
 
+    user = await get_current_user(request)
+    if user is None:
+        return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
 
-"""
-@router.get("/")
-async def read_user_by_query_param(user_id: int, db: Session = Depends(get_db)):
-    user_model = db.query(models.Users).filter(models.Users.id == user_id).first()
-    if user_model is not None:
-        return user_model
-    return "Invalid User"
-"""
+    user_data = db.query(models.Users).filter(models.Users.username == username).first()
+
+    msg = "invalid username or password"
+
+    if user_data is not None:
+        if username == user_data.username and verify_password(password, user_data.hashed_password):
+            user_data.hashed_password = get_password_hashed(password2)
+            db.add(user_data)
+            db.commit()
+            msg = "Password Updated"
+
+    return templates.TemplateResponse("edit-password.html", {"request": request, "user": user, "msg": msg})
 
 
 @router.put("/password")

@@ -9,24 +9,21 @@
             <form method="POST">
                 <div class="form-group">
                     <label>Task</label>
-                    <input type="text" class="form-control" name="task"
-                           value="{{task.task_name}}"
-                           required>
+                    <input type="text" class="form-control" name="task_name" value="{{task.task_name}}" required>
                 </div>
                 <div class="form-group">
                     <label>Category</label>
-                    <input type="text" class="form-control" name="category"
-                                value="{{task.category}}"
-                              required>
+                    <input type="text" class="form-control" name="category" value="{{task.category}}" required>
 
-                    </input>
+
                 </div>
                 <div class="form-group">
                     <label>Date Taken</label>
-                    <input id="picker" class="form-control" name="date-taken" value="{{task.date_taken}}">
+                    <input id="picker" class="form-control" name="date_taken" value="{{task.date_taken}}">
 
                 </div>
                 <button type="submit" class="btn btn-primary">Update</button>
+                <button type="button" class="btn btn-info">Cancel</button>
             </form>
         </div>
     </div>

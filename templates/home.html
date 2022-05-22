@@ -28,7 +28,7 @@
                       <td>{{loop.index}}</td>
                       <td>{{ task.task_name }} </td>
                       <td>{{ task.category }} </td>
-                      <td>{{ task.date_taken }} </td>
+                      <td>{{ task.date_taken.strftime('%m-%d-%Y') }} </td>
                       <td>
                           <!-- Call endpoint in task API -->
                           <button onclick="window.location.href='edit-task/{{task.id}}'"
