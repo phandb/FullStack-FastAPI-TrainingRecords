@@ -86,6 +86,7 @@ async def create_task(request: Request,
     task_model.task_name = task_name
     task_model.category = category
     task_model.date_taken = date_taken
+    task_model.date_expired = await set_expire_date(date_taken)
     task_model.days_expired = await get_days_to_expire(date_taken)
     task_model.owner_id = user.get("id")
 
@@ -154,13 +155,16 @@ async def delete_task(request: Request, task_id: int, db: Session = Depends(get_
 
 
 async def get_days_to_expire(date_taken: datetime):
-    expired_date = date_taken + timedelta(days=6)
+    expired_date = date_taken + timedelta(days=2)
     if datetime.today() > expired_date:
         return "expired"
     else:
         days_to_expire = expired_date - datetime.today()  # still in datetime object
         return str(days_to_expire.days + 1)  # duration in days
 
+
+async def set_expire_date(date_taken: datetime):
+    return date_taken + timedelta(days=2)
 
 # -----------------------------------------------------
 

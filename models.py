@@ -29,7 +29,7 @@ class Tasks(Base):
     task_name = Column(String)
     category = Column(String)
     date_taken = Column(DateTime, default=datetime.now(tz=pytz.timezone('US/Central')))
-    # date_expired = Column(DateTime, default=datetime.now(tz=pytz.timezone('US/Central')))
+    date_expired = Column(DateTime)
     days_expired = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"))
 
