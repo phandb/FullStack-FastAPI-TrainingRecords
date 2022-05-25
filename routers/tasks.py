@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Request, Form
 from jinja2 import Template
@@ -27,6 +27,7 @@ models.Base.metadata.create_all(bind=engine)
 
 templates = Jinja2Templates(directory="templates")
 
+
 # datetime_template = Template("{{ date.strftime('%Y-%m-%d') }}")
 
 
@@ -41,7 +42,6 @@ def get_db():
 # ---------- Rebuild Entire API for full stack project-----------
 @router.get("/", response_class=HTMLResponse)
 async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
-
     # get current user
     user = await get_current_user(request)
     if user is None:
@@ -49,13 +49,16 @@ async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
 
     tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == user.get("id")).all()
 
+    # Update number days to expire for each record
+    for index, task in enumerate(tasks):
+        tasks[index].days_expired = await get_days_to_expire(tasks[index].date_taken)
+
     return templates.TemplateResponse("home.html", {"request": request, "tasks": tasks, "user": user})
 
 
 # call add-task.html
 @router.get("/add-task", response_class=HTMLResponse)
 async def add_new_task(request: Request):
-
     # get the current user
     user = await get_current_user(request)
     if user is None:
@@ -83,6 +86,7 @@ async def create_task(request: Request,
     task_model.task_name = task_name
     task_model.category = category
     task_model.date_taken = date_taken
+    task_model.days_expired = await get_days_to_expire(date_taken)
     task_model.owner_id = user.get("id")
 
     db.add(task_model)
@@ -93,7 +97,6 @@ async def create_task(request: Request,
 
 @router.get("/edit-task/{task_id}", response_class=HTMLResponse)
 async def edit_task(request: Request, task_id: int, db: Session = Depends(get_db)):
-
     # Get the current user
     user = await get_current_user(request)
     if user is None:
@@ -111,7 +114,6 @@ async def edit_task_commit(request: Request,
                            category: str = Form(...),
                            date_taken: datetime = Form(...),
                            db: Session = Depends(get_db)):
-
     # get the current user
     user = await get_current_user(request)
     if user is None:
@@ -131,15 +133,14 @@ async def edit_task_commit(request: Request,
 
 @router.get("/delete/{task_id}")
 async def delete_task(request: Request, task_id: int, db: Session = Depends(get_db)):
-
     # Get the current user
     user = await get_current_user(request)
     if user is None:
         return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
 
-    task_model = db.query(models.Tasks)\
-        .filter(models.Tasks.id == task_id)\
-        .filter(models.Tasks.owner_id == user.get("id"))\
+    task_model = db.query(models.Tasks) \
+        .filter(models.Tasks.id == task_id) \
+        .filter(models.Tasks.owner_id == user.get("id")) \
         .first()
 
     if task_model is None:
@@ -152,7 +153,14 @@ async def delete_task(request: Request, task_id: int, db: Session = Depends(get_
     return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
 
 
-# async def date_format(date: str):
+async def get_days_to_expire(date_taken: datetime):
+    expired_date = date_taken + timedelta(days=6)
+    if datetime.today() > expired_date:
+        return "expired"
+    else:
+        days_to_expire = expired_date - datetime.today()  # still in datetime object
+        return str(days_to_expire.days + 1)  # duration in days
+
 
 # -----------------------------------------------------
 

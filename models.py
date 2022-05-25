@@ -1,5 +1,6 @@
 from datetime import date, datetime
 
+import pytz
 from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 
@@ -27,8 +28,9 @@ class Tasks(Base):
     id = Column(Integer, primary_key=True, index=True)
     task_name = Column(String)
     category = Column(String)
-    date_taken = Column(DateTime, default=datetime.utcnow)
-    # days_expired = Column(String)
+    date_taken = Column(DateTime, default=datetime.now(tz=pytz.timezone('US/Central')))
+    # date_expired = Column(DateTime, default=datetime.now(tz=pytz.timezone('US/Central')))
+    days_expired = Column(String)
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     # Navigation Property

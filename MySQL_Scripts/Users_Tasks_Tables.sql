@@ -19,7 +19,7 @@ CREATE TABLE tasks (
 	id INT(11) NOT NULL AUTO_INCREMENT,
     task_name VARCHAR(200) DEFAULT NULL,
     category VARCHAR(200) DEFAULT NULL,
-    date_taken DATE DEFAULT NULL,
+    date_taken DATETIME DEFAULT NULL,
     owner_id INT(11),
     PRIMARY KEY (id),
     FOREIGN KEY (owner_id) REFERENCES users(id)

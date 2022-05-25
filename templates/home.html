@@ -16,6 +16,7 @@
                       <th scope="col">Task Name</th>
                       <th scope="col">Category</th>
                       <th scope="col">Date Taken</th>
+                      <th scope="col">Days to Expire</th>
                       <th scope="col">Actions</th>
 
                     </tr>
@@ -25,10 +26,11 @@
                 {% for task in tasks %}
                      <tr class="pointer" >
 
-                      <td>{{loop.index}}</td>
+                      <td>{{ loop.index }}</td>
                       <td>{{ task.task_name }} </td>
                       <td>{{ task.category }} </td>
                       <td>{{ task.date_taken.strftime('%m-%d-%Y') }} </td>
+                      <td> {{ task.days_expired }} </td>
                       <td>
                           <!-- Call endpoint in task API -->
                           <button onclick="window.location.href='edit-task/{{task.id}}'"

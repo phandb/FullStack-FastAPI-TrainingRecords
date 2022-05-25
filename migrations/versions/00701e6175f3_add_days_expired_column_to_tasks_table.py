@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    pass
+    op.add_column('tasks', sa.Column('days_expired', sa.VARCHAR(50), nullable=True))
 
 
 def downgrade():
-    pass
+    op.drop_column('tasks', 'days_expired')
