@@ -36,14 +36,18 @@
                       <td>
                           <!-- Call endpoint in task API -->
                           <button onclick="window.location.href='edit-task/{{task.id}}'"
-                                  type="button" class="btn btn-info">
-                              Edit
+                                  type="button" class="btn btn-outline-info" style="font-size:18px"
+                                  data-toggle="tooltip" data-placement="top" title="Edit">
+                              <i class="fas fa-edit"></i>
+
                           </button>
                           <!-- Call endpoint in task API -->
                           <button onclick="window.location.href='/tasks/delete/{{task.id}}'"
                                   type="button"
-                                  class="btn btn-danger">
-                              Delete
+                                  class="btn btn-outline-danger"
+                                  style="font-size:18px"
+                                  data-toggle="tooltip" data-placement="top" title="Delete">
+                              <i class="fas fa-trash-alt"></i>
 
                           </button>
                       </td>
@@ -54,7 +58,7 @@
                 </tbody>
              </table>
 
-            <a href="add-task" class="btn btn-primary">Add a new Task!</a>
+            <a href="add-task" class="btn btn-outline-primary">Add a new Task!</a>
         </div>
     </div>
 </div>
