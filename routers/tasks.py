@@ -47,12 +47,18 @@ async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
     if user is None:
         return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
 
+    task_model = models.Tasks()
+
     tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == user.get("id")).all()
 
     # Update number days to expire for each record
     for index, task in enumerate(tasks):
-        tasks[index].days_expired = await get_days_to_expire(tasks[index].date_taken)
-
+        tasks[index].days_expired = await get_days_to_expire(tasks[index].date_expired)
+    #     task_model.days_expired = tasks[index].days_expired
+    #     task_model.owner_id = user.get("id")
+    #     db.add(task_model)
+    #
+    # db.commit()
     return templates.TemplateResponse("home.html", {"request": request, "tasks": tasks, "user": user})
 
 
@@ -87,7 +93,7 @@ async def create_task(request: Request,
     task_model.category = category
     task_model.date_taken = date_taken
     task_model.date_expired = await set_expire_date(date_taken)
-    task_model.days_expired = await get_days_to_expire(date_taken)
+    task_model.days_expired = await get_days_to_expire(task_model.date_expired)
     task_model.owner_id = user.get("id")
 
     db.add(task_model)
@@ -125,6 +131,7 @@ async def edit_task_commit(request: Request,
     task_model.task_name = task_name
     task_model.category = category
     task_model.date_taken = date_taken
+    task_model.date_expired = await set_expire_date(date_taken)
 
     db.add(task_model)
     db.commit()
@@ -154,13 +161,27 @@ async def delete_task(request: Request, task_id: int, db: Session = Depends(get_
     return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
 
 
-async def get_days_to_expire(date_taken: datetime):
-    expired_date = date_taken + timedelta(days=2)
-    if datetime.today() > expired_date:
-        return "expired"
+async def get_days_to_expire(expired_date: datetime):
+
+    # Format datetime
+    date_format_str = "%Y-%m-%d"
+
+    # date_taken = datetime.strftime(date_taken, date_format_str)
+
+    # Get interval between to dates in seconds
+    days_to_expire = (expired_date - datetime.today()).days
+    # seconds_to_expire = (expired_date - datetime.today()).total_seconds()
+    # seconds_remain = seconds_to_expire % 864000
+
+    expireddate = expired_date.strftime(date_format_str)
+    todaydate = datetime.today().strftime(date_format_str)
+
+    if todaydate < expireddate:
+        return str(abs(days_to_expire) + 1)  # duration in days
+    if todaydate == expireddate:
+        return "< 1"
     else:
-        days_to_expire = expired_date - datetime.today()  # still in datetime object
-        return str(days_to_expire.days + 1)  # duration in days
+        return "expired"
 
 
 async def set_expire_date(date_taken: datetime):

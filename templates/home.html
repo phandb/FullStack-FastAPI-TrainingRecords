@@ -32,7 +32,11 @@
                       <td>{{ task.category }} </td>
                       <td>{{ task.date_taken.strftime('%m-%d-%Y') }} </td>
                       <td>{{ task.date_expired.strftime('%m-%d-%Y') }} </td>
-                      <td> {{ task.days_expired }} </td>
+                      {% if "expired" in task.days_expired %}
+                        <td> {{ task.days_expired }} </td>
+                      {% else %}
+                         <td> {{ task.days_expired }} day(s)</td>
+                      {% endif %}
                       <td>
                           <!-- Call endpoint in task API -->
                           <button onclick="window.location.href='edit-task/{{task.id}}'"
