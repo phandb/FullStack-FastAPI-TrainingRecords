@@ -12,9 +12,17 @@
                     <input type="text" class="form-control" name="task_name" value="{{task.task_name}}" required>
                 </div>
                 <div class="form-group">
-                    <label>Category</label>
-                    <input type="text" class="form-control" name="category" value="{{task.category}}" required>
+                    <label for="category">Category:</label>
+                    <select id="category" name="category_selected"  class="form-control">
+<!--                        <option value="{{ task.category }}"  ></option>-->
+                        {% for category in categories %}
 
+                        <option value="{{ category }}" {% if category == task.category  %} selected {% endif %}>{{ category }}</option>
+
+<!--                                <option value="{{ task.category }}">{{ category }}</option>-->
+
+                        {% endfor %}
+                    </select>
 
                 </div>
                 <div class="form-group">

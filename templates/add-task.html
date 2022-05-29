@@ -13,9 +13,15 @@
                            required>
                 </div>
                 <div class="form-group">
-                    <label>Category</label>
-                    <input class="form-control" name="category"
-                              required></input>
+                    <label for="category">Category:</label>
+                    <select id="category" name="category" class="form-control">
+                        {% for category in categories %}
+                        <option value="{{category}}">{{category}}</option>
+                        {% endfor %}
+                    </select>
+<!--                    <input class="form-control" name="category"-->
+<!--                           -->
+<!--                              required></input>-->
                 </div>
                 <div class="form-group">
                     <label>Date Taken</label>

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from enum import Enum
 
 from fastapi import APIRouter, Depends, Request, Form
 from jinja2 import Template
@@ -39,6 +40,12 @@ def get_db():
         db.close()
 
 
+class Category(str, Enum):
+    EXTRACT = "Extract"
+    ANALYSIS = "Analysis"
+    FULL_METHOD = "Full Method"
+
+
 # ---------- Rebuild Entire API for full stack project-----------
 @router.get("/", response_class=HTMLResponse)
 async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
@@ -70,14 +77,17 @@ async def add_new_task(request: Request):
     if user is None:
         return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
 
-    return templates.TemplateResponse("add-task.html", {"request": request, "user": user})
+    return templates.TemplateResponse("add-task.html", {"request": request,
+                                                        "categories": [e.value for e in Category],
+                                                        "user": user})
 
 
 # process form in add-task.html
 @router.post("/add-task", response_class=HTMLResponse)
 async def create_task(request: Request,
                       task_name: str = Form(...),
-                      category: str = Form(...),
+                      # category: str = Form(...),
+                      category: Category = Form(...),
                       date_taken: datetime = Form(...),
                       db: Session = Depends(get_db)):
     #  The parameters must be matched to the name field of the form in add-task.html
@@ -111,14 +121,17 @@ async def edit_task(request: Request, task_id: int, db: Session = Depends(get_db
 
     task = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
 
-    return templates.TemplateResponse("edit-task.html", {"request": request, "task": task, "user": user})
+    return templates.TemplateResponse("edit-task.html", {"request": request,
+                                                         "categories": [e.value for e in Category],
+                                                         "task": task,
+                                                         "user": user})
 
 
 @router.post("/edit-task/{task_id}", response_class=HTMLResponse)
 async def edit_task_commit(request: Request,
                            task_id: int,
                            task_name: str = Form(...),
-                           category: str = Form(...),
+                           category_selected: Category = Form(...),
                            date_taken: datetime = Form(...),
                            db: Session = Depends(get_db)):
     # get the current user
@@ -129,7 +142,7 @@ async def edit_task_commit(request: Request,
     task_model = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
 
     task_model.task_name = task_name
-    task_model.category = category
+    task_model.category = category_selected
     task_model.date_taken = date_taken
     task_model.date_expired = await set_expire_date(date_taken)
 

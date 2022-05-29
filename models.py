@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from enum import Enum
 
 import pytz
 from sqlalchemy import Column, Integer, String, Boolean, Date, ForeignKey, DateTime
@@ -35,4 +36,3 @@ class Tasks(Base):
 
     # Navigation Property
     owner = relationship("Users", back_populates="tasks")
-
