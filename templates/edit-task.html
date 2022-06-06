@@ -9,7 +9,19 @@
             <form method="POST">
                 <div class="form-group">
                     <label>Task</label>
-                    <input type="text" class="form-control" name="task_name" value="{{task.task_name}}" required>
+<!--                    <input type="text" class="form-control" name="task_name" value="{{task.task_name}}" required>-->
+
+                    <select id="task" name="task_name_selected"  class="form-control" required>
+
+                        {% for method in methods %}
+
+                        <option value="{{ method }}" {% if method == task.task_name  %} selected {% endif %}>{{ method }}</option>
+
+
+
+                        {% endfor %}
+                    </select>
+
                 </div>
                 <div class="form-group">
                     <label for="category">Category:</label>

@@ -46,6 +46,28 @@ class Category(str, Enum):
     FULL_METHOD = "Full Method"
 
 
+class Method(str, Enum):
+    EPA_504_1 = "504.1"
+    Aroclor = "508.1 Aroclor"
+    Chlordane = "508.1 Chlordane"
+    Pesticides = "508.1 Pesticides"
+    Pesticides_Sublist = "508.1 Pesticides-Sublist"
+    TCEQ_Ind_List = "508.1 TCEQ-Ind-List"
+    Toxaphene = "508.1 Toxaphene"
+    PCB_as_DCB = "508A PCB as DCB"
+    EPA_515_4 = "515.4"
+    THM = "524.2 THM"
+    VOC = "524.2 VOC"
+    Endrin = "525.2 Endrin"
+    SOC5 = "525.2 SOC5"
+    Carbamates = "531.1 Carbamates"
+    Glyphosate_547 = "547 Glyphosate"
+    Glyphosate_548 = "548.1 Glyphosate"
+    Endothall = "548.1 Endothall"
+    Para_Diq = "549.2 Para/Diq"
+    HAA = "552.2 HAA"
+
+
 # ---------- Rebuild Entire API for full stack project-----------
 @router.get("/", response_class=HTMLResponse)
 async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
@@ -78,15 +100,16 @@ async def add_new_task(request: Request):
         return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
 
     return templates.TemplateResponse("add-task.html", {"request": request,
-                                                        "categories": [e.value for e in Category],
+                                                        "methods": [m.value for m in Method],
+                                                        "categories": [c.value for c in Category],
                                                         "user": user})
 
 
 # process form in add-task.html
 @router.post("/add-task", response_class=HTMLResponse)
 async def create_task(request: Request,
-                      task_name: str = Form(...),
-                      # category: str = Form(...),
+                      # task_name: str = Form(...),
+                      task_name: Method = Form(...),
                       category: Category = Form(...),
                       date_taken: datetime = Form(...),
                       db: Session = Depends(get_db)):
@@ -122,7 +145,8 @@ async def edit_task(request: Request, task_id: int, db: Session = Depends(get_db
     task = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
 
     return templates.TemplateResponse("edit-task.html", {"request": request,
-                                                         "categories": [e.value for e in Category],
+                                                         "methods": [m.value for m in Method],
+                                                         "categories": [c.value for c in Category],
                                                          "task": task,
                                                          "user": user})
 
@@ -130,7 +154,8 @@ async def edit_task(request: Request, task_id: int, db: Session = Depends(get_db
 @router.post("/edit-task/{task_id}", response_class=HTMLResponse)
 async def edit_task_commit(request: Request,
                            task_id: int,
-                           task_name: str = Form(...),
+                           # task_name: str = Form(...),
+                           task_name_selected: Method = Form(...),
                            category_selected: Category = Form(...),
                            date_taken: datetime = Form(...),
                            db: Session = Depends(get_db)):
@@ -141,7 +166,7 @@ async def edit_task_commit(request: Request,
 
     task_model = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
 
-    task_model.task_name = task_name
+    task_model.task_name = task_name_selected
     task_model.category = category_selected
     task_model.date_taken = date_taken
     task_model.date_expired = await set_expire_date(date_taken)
@@ -175,7 +200,6 @@ async def delete_task(request: Request, task_id: int, db: Session = Depends(get_
 
 
 async def get_days_to_expire(expired_date: datetime):
-
     # Format datetime
     date_format_str = "%Y-%m-%d"
 
@@ -199,6 +223,7 @@ async def get_days_to_expire(expired_date: datetime):
 
 async def set_expire_date(date_taken: datetime):
     return date_taken + timedelta(days=2)
+
 
 # -----------------------------------------------------
 
