@@ -78,7 +78,7 @@ async def read_all_by_user(request: Request, db: Session = Depends(get_db)):
 
     task_model = models.Tasks()
 
-    tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == user.get("id")).all()
+    tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == user.get("id")).order_by(models.Tasks.task_name)
 
     # Update number days to expire for each record
     for index, task in enumerate(tasks):
@@ -129,6 +129,14 @@ async def create_task(request: Request,
     task_model.days_expired = await get_days_to_expire(task_model.date_expired)
     task_model.owner_id = user.get("id")
 
+    # Validate Task -- No duplicate task name and category allowed
+
+    tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == user.get("id")).all()
+
+    for index, task in enumerate(tasks):
+        if task_model.task_name == tasks[index].task_name and task_model.category == tasks[index].category:
+            return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
+
     db.add(task_model)
     db.commit()
 
@@ -163,6 +171,16 @@ async def edit_task_commit(request: Request,
     user = await get_current_user(request)
     if user is None:
         return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
+
+    # Validate Task -- No duplicate task name and category allowed
+
+    # tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == user.get("id")).all()
+    #
+    # for index, task in enumerate(tasks):
+    #     if task_name_selected == tasks[index].task_name and category_selected == tasks[index].category:
+    #         return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
+    #
+    # # Validate succeed then commit the changes to database
 
     task_model = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
 
