@@ -135,7 +135,13 @@ async def create_task(request: Request,
 
     for index, task in enumerate(tasks):
         if task_model.task_name == tasks[index].task_name and task_model.category == tasks[index].category:
-            return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
+            msg = "The selected task with the category already exists.  Please choose different task or category."
+            # return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND, headers=msg)
+            return templates.TemplateResponse("add-task.html", {"request": request,
+                                                                "methods": [m.value for m in Method],
+                                                                "categories": [c.value for c in Category],
+                                                                "user": user,
+                                                                "msg": msg})
 
     db.add(task_model)
     db.commit()
@@ -151,12 +157,13 @@ async def edit_task(request: Request, task_id: int, db: Session = Depends(get_db
         return RedirectResponse(url="/auth", status_code=status.HTTP_302_FOUND)
 
     task = db.query(models.Tasks).filter(models.Tasks.id == task_id).first()
-
+    msg = "Do not change the task or category.  No task with the same category is allowed!"
     return templates.TemplateResponse("edit-task.html", {"request": request,
                                                          "methods": [m.value for m in Method],
                                                          "categories": [c.value for c in Category],
                                                          "task": task,
-                                                         "user": user})
+                                                         "user": user,
+                                                         "msg": msg})
 
 
 @router.post("/edit-task/{task_id}", response_class=HTMLResponse)
@@ -177,8 +184,14 @@ async def edit_task_commit(request: Request,
     # tasks = db.query(models.Tasks).filter(models.Tasks.owner_id == user.get("id")).all()
     #
     # for index, task in enumerate(tasks):
-    #     if task_name_selected == tasks[index].task_name and category_selected == tasks[index].category:
-    #         return RedirectResponse(url="/tasks", status_code=status.HTTP_302_FOUND)
+    #     if task_name_selected != tasks[index].task_name and category_selected != tasks[index].category:
+    #         msg = "The selected task with the category already exists.  No task with the same category is allowed!"
+    #         return templates.TemplateResponse("edit-task.html", {"request": request,
+    #                                                              "methods": [m.value for m in Method],
+    #                                                              "categories": [c.value for c in Category],
+    #                                                              "task": task,
+    #                                                              "user": user,
+    #                                                              "msg": msg})
     #
     # # Validate succeed then commit the changes to database
 

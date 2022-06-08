@@ -6,6 +6,11 @@
              Let's edit your task!
         </div>
         <div class="card-body">
+            {% if msg %}
+                <div class="alert alert-info">
+                    {{ msg }}
+                </div>
+            {% endif %}
             <form method="POST">
                 <div class="form-group">
                     <label>Task</label>
